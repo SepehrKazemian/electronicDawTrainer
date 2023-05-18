@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "abcjs": "^6.1.9",
+    "soundfont-player": "^0.12.0"
+  }
+}

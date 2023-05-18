@@ -1,0 +1,144 @@
+#time-grid {
+    position: relative;
+    height: 100px;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+}
+
+.time-label {
+    position: absolute;
+    top: -20px;
+}
+
+.time-mark {
+    position: absolute;
+    border-left: 1px solid black;
+    height: 100%;
+}
+
+.time-mark--minor {
+    /* height: calc(100% - 10px); */
+    border-style: ridge;
+}
+
+#note-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50px;
+    height: 50px;
+    margin-top: 25px;
+    margin-left: -25px;
+}
+
+/* .time-mark--semi {
+    border-top: 1px dashed #aaa;
+} */
+#matrix {
+    /* display: flex; */
+    flex-wrap: wrap;
+    /* margin-top: 5%; */
+    width: 70%;
+    height: 100%;
+    border: 1px solid black;
+    border-style: dotted;
+    padding: 1%;
+}
+
+.box {
+    /* width: calc(100% / 10); */
+    /* margin-top: 10px; */
+    /* position: absolute; */
+    height: 100%;
+
+    margin: 0;
+    /* height: calc(100% / 10); */
+    border: 1px solid black;
+    border-right: 0;
+    border-left: 0;
+    box-sizing: border-box;
+    background-color: rgb(218, 217, 217);
+    /* transition: background-image 0.5s ease-in-out; */
+
+
+    /* transition: transform 500ms; */
+}
+
+/* Apply transform to move box to the left */
+.box.moveLeft {
+    transform: translateX(-100%);
+    /* opacity: 1 !important; */
+    /* left: -300px; */
+}
+
+.box.active {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.red-line {
+    height: 100%;
+    width: 11px;
+    background-color: #000dff;
+    position: absolute;
+    left: 3%;
+    transform: translateX(-50%);
+}
+
+#moving_box {
+    width: 100%;
+    position: relative;
+    /* animation: slide 10s linear infinite; */
+}
+
+@keyframes slide {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+.transition_row {
+    display: flex;
+    position: relative;
+
+}
+
+.highlighted {
+    background-color: rgb(94, 255, 0) !important;
+}
+
+/* .bar {
+    position: relative;
+    width: 100%;
+    height: 10px;
+    background-color: #ccc;
+    margin-bottom: 10px;
+} */
+
+.indicator {
+    /* position: absolute;
+    top: 0;
+    left: 0; */
+    display: flex;
+    width: 100% !important;
+    height: 100%;
+    width: 0%;
+    background-color: rgb(169, 203, 219);
+}
+
+.slider-container {
+    position: relative;
+    width: 200px;
+    /* Set the width of the slider container */
+}
+
+#slider-value {
+    position: relative;
+    top: -30px;
+    /* Position the text element above the slider */
+    /* left: calc(100% / 100 * var(--value) - 10px); */
+    /* Position the text element relative to the slider value */
+}

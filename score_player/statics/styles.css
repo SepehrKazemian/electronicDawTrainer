@@ -1,0 +1,39 @@
+.sound-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    height: 400px;
+    margin: 50px;
+}
+
+.outer-container {
+    background-color: grey;
+    width: 10%;
+    height: 100%;
+    margin-bottom: 10px;
+}
+
+.bar {
+    background-color: green;
+    position: relative;
+    width: 80%;
+    margin: 10%;
+}
+
+
+
+.value-bar-list select {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.title {
+    margin-bottom: 10px;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+}
