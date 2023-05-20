@@ -122,7 +122,7 @@
             "L: 1/4\n" +
             "K: Cmaj\n" +
             "T:Accidentals\n" +
-            "|: e1/2d1/2e1/2d1/2 e2d2 e1e1 | d2e2 d1d1 |";
+            "|: e1/2d1/2e1/2d1/2 e2d2 e1e1 | d2e2 d1d1 | d2e2 d1d1";
 
         // " E2E2 E2E2 | D2D2 D2D2 | C2C2 C2C2 | A2A2 A2A2 |]\n";
         // " |: c2c2 c2c2 | d2d2 d2d2 | c2c2 c2c2 | d2d2 d2d2 |\n" +
@@ -180,10 +180,13 @@
             secondToMove: 1,
             stopInterval: 1,
         };
-        let colorMatrix = createTimeGrid(extraBeatsPerWeight, barCounter, instrumentCounts, lcm, noteDurations, barTotalCounts, noteWeights, noteWeightsMax, barlinesMaxView);
+        const maxBeatPositionCounter = 140;
+        let colorMatrix = createTimeGrid(extraBeatsPerWeight, barCounter, instrumentCounts, lcm, noteDurations, barTotalCounts, noteWeights, noteWeightsMax, barlinesMaxView, maxBeatPositionCounter);
         const windowSize = 140;
         let windowPosition = 0;
-        coloringInit(colorMatrix);
+        console.log("colorMatrix ", colorMatrix);
+        colorMatrix = endColorSpace(colorMatrix);
+        coloringInit(colorMatrix, maxBeatPositionCounter);
         // applyColorMatrixWithWindow(colorMatrix, windowSize, windowPosition);
         // applyColorMatrix(colorMatrix);
         const extraBeats = extraBeatsPerWeight;
@@ -195,7 +198,7 @@
         const delayWorker = new Worker("{% static 'delayWorker.js' defer %}");
         // importWorkerScripts("{% static 'colorCalculationWorker.js' defer %}", "{% static 'delayWorker.js' defer %}");
 
-        movingColors(colorCalculationWorker, delayWorker, sharedVars, colorMatrix, windowSize);
+        movingColors(colorCalculationWorker, delayWorker, sharedVars, colorMatrix, windowSize, maxBeatPositionCounter);
 
         let noteNumber = 0;
         let beatCount = 0;
@@ -208,6 +211,14 @@
     </script>
 
     <script>
+        function endColorSpace(colorMatrix) {
+            for (let inst = 0; inst < colorMatrix.length; inst++) {
+                for (let i = 0; i < 10; i++)
+                    colorMatrix[inst].push("rgb(0, 0, 0)");
+            }
+            return colorMatrix
+
+        }
 
 
 

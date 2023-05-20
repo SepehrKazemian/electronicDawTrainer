@@ -2,20 +2,23 @@ self.onmessage = async (event) => {
     const { sharedVars, colorMatrix, windowSize, updatedColorsList } = event.data;
 
     for (const updatedColors of updatedColorsList) {
+        console.log("hereeeeeee11111");
         let startTime = performance.now();
         let testTime = performance.now();
 
-        self.postMessage({ updatedColors });
-
+        self.postMessage(updatedColors);
         let endTime = performance.now();
         let elapsedTime = endTime - startTime;
         let delayTime = sharedVars.secondToMove * 1000 - elapsedTime;
 
         await preciseDelay(delayTime);
-        console.log("sharsedVars ", delayTime + elapsedTime, performance.now() - testTime)
+        // console.log("sharsedVars ", delayTime + elapsedTime, performance.now() - testTime)
         let endTest = performance.now();
+
     }
 };
+
+
 
 function preciseDelay(ms) {
     const start = performance.now();

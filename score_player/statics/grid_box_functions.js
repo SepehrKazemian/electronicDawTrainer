@@ -1,5 +1,6 @@
-export function generateColorArray(noteWeights, extraBeats, noteWeightsMax) {
+export function generateColorArray(noteWeights, extraBeats, noteWeightsMax, maxBeatPositionCounter) {
     const colorArray = [];
+
     console.log("here");
 
     const noteMap = {};
@@ -20,6 +21,7 @@ export function generateColorArray(noteWeights, extraBeats, noteWeightsMax) {
         }
         const instrumentColors = [];
         let beatPositionCounter = 0;
+        let color = "";
 
         for (let beatDurationIndex = 0; beatDurationIndex < durationValuesArray.length; beatDurationIndex++) {
             if (durationValuesArray[beatDurationIndex] === "|") {
@@ -28,25 +30,25 @@ export function generateColorArray(noteWeights, extraBeats, noteWeightsMax) {
             }
 
             const beatDuration = durationValuesArray[beatDurationIndex];
-            const beatDurationView = beatDuration * extraBeats;
+            let beatDurationView = beatDuration * extraBeats;
 
+            let coloringBool = true;
             if (beatDurationView == 0) {
-                let whiteSpaces = noteWeightsMax[beatDurationIndex] * extraBeats;
-
-                for (let beatCount = 0; beatCount < whiteSpaces; beatCount++) {
-                    instrumentColors.push("rgb(255, 255, 255)");
-                    let box = document.getElementById(`box${instrument}-${barlineCounter}-${beatCount}-${beatDurationIndex}`);
-                    box.setAttribute("data-beat-position", `box${instrument}-${beatPositionCounter}`);
-                    beatPositionCounter += 1;
-                }
+                beatDurationView = noteWeightsMax[beatDurationIndex] * extraBeats; // whitespaces
+                coloringBool = false;
             }
 
             for (let beatCount = 0; beatCount < beatDurationView; beatCount++) {
-                const color = getColor(beatCount, beatDurationView);
+                if (coloringBool)
+                    color = getColor(beatCount, beatDurationView);
+                else
+                    color = "rgb(255, 255, 255)";
                 instrumentColors.push(color);
                 let box = document.getElementById(`box${instrument}-${barlineCounter}-${beatCount}-${beatDurationIndex}`);
-                box.setAttribute("data-beat-position", `box${instrument}-${beatPositionCounter}`);
-                beatPositionCounter += 1;
+                if (beatPositionCounter < maxBeatPositionCounter) {
+                    box.setAttribute("data-beat-position", `box${instrument}-${beatPositionCounter}`);
+                    beatPositionCounter += 1;
+                }
 
             }
         }
@@ -57,7 +59,7 @@ export function generateColorArray(noteWeights, extraBeats, noteWeightsMax) {
     return colorMatrix;
 }
 
-export function createTimeGrid(extraBeatsPerWeight, barCounter, instrumentCounts, lcm, noteDurations, barTotalCounts, noteWeights, noteWeightsMax, barlinesMaxView) {
+export function createTimeGrid(extraBeatsPerWeight, barCounter, instrumentCounts, lcm, noteDurations, barTotalCounts, noteWeights, noteWeightsMax, barlinesMaxView, maxBeatPositionCounter) {
     // Define the number of seconds to display
     const barline = barCounter;
     console.log("min is: ", barline);
@@ -128,7 +130,7 @@ export function createTimeGrid(extraBeatsPerWeight, barCounter, instrumentCounts
     // Repeat(boxes, numBeats, barline, 1)
 
     // numBeats = 40
-    let colorMatrix = generateColorArray(noteWeights, extraBeats, noteWeightsMax);
+    let colorMatrix = generateColorArray(noteWeights, extraBeats, noteWeightsMax, maxBeatPositionCounter);
 
     console.log("colorMAtrix is: ", colorMatrix);
     return colorMatrix

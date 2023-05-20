@@ -10,12 +10,16 @@
 // };
 
 
-export function coloringInit(colorMatrix) {
+export function coloringInit(colorMatrix, maxBeatPositionCounter) {
     for (let instrument = 0; instrument < colorMatrix.length; instrument++) {
+        // console.log("instrument: ", instrument);
         const instrumentColors = colorMatrix[instrument];
         for (let beatPosition = 0; beatPosition < instrumentColors.length; beatPosition++) {
-            let beatsToColorElement = document.querySelector(`[data-beat-position="box${instrument}-${beatPosition}"]`);
-            beatsToColorElement.style.backgroundColor = instrumentColors[beatPosition];
+            if (beatPosition < maxBeatPositionCounter) {
+                let beatsToColorElement = document.querySelector(`[data-beat-position="box${instrument}-${beatPosition}"]`);
+                beatsToColorElement.style.backgroundColor = instrumentColors[beatPosition];
+                continue;
+            }
         }
     }
 }
