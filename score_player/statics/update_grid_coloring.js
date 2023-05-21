@@ -58,12 +58,19 @@ export function movingColors(colorCalculationWorker, delayWorker, sharedVars, co
         });
     }
     // Function to send a message to delayWorker
+    // let lastUpdateTime = null;
     function postMessageToDelayWorker(message) {
         console.log("yellow", message);
         return new Promise((resolve, reject) => {
             delayWorker.onmessage = (event) => {
+                // const currentTime = performance.now();
+                // console.log("yellowxxxx", message);
                 const updatedColors = event.data;
                 updateColors(updatedColors);
+                colorCalculationWorker.postMessage({ signal: true });
+                // const timeBetweenUpdates = currentTime - lastUpdateTime;
+                // console.log("Time interval between updates: ", timeBetweenUpdates);
+                // lastUpdateTime = currentTime;
                 resolve(); // Resolve the promise with the event data
             };
             delayWorker.onerror = reject;
@@ -132,7 +139,7 @@ export function movingColors(colorCalculationWorker, delayWorker, sharedVars, co
 
 
     // Handle message from delayWorker
-    let lastUpdateTime = null;
+    // let lastUpdateTime = null;
     delayWorker.onmessage = (event) => {
         console.log("here111");
         const currentTime = performance.now();
@@ -148,6 +155,7 @@ export function movingColors(colorCalculationWorker, delayWorker, sharedVars, co
 
     // Function to update colors on the UI
     function updateColors(updatedColors) {
+        // console.log(updatedColors);
         for (const [instrument, beatPosition, color] of updatedColors) {
             let beatsToColorElement = document.querySelector(
                 `[data-beat-position="box${instrument}-${beatPosition}"]`

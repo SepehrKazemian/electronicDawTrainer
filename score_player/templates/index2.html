@@ -204,7 +204,7 @@
         let beatCount = 0;
         let barCount = -1;
 
-        tempoSlider(sharedVars, extraBeatsPerWeight, noteWeightsMax, instrumentCounts, barCounter, barlinesMaxView);
+        tempoSlider(sharedVars, colorCalculationWorker, delayWorker, extraBeatsPerWeight, noteWeightsMax, instrumentCounts, barCounter, barlinesMaxView);
         console.log(abc);
 
         load(abc, soundFontUrl);
@@ -213,7 +213,7 @@
     <script>
         function endColorSpace(colorMatrix) {
             for (let inst = 0; inst < colorMatrix.length; inst++) {
-                for (let i = 0; i < 10; i++)
+                for (let i = 0; i < 20; i++)
                     colorMatrix[inst].push("rgb(0, 0, 0)");
             }
             return colorMatrix
@@ -224,115 +224,6 @@
 
     </script>
     <script>
-
-
-
-
-        // function generateColorArray(noteWeights, extraBeats, noteWeightsMax) {
-        //     const colorArray = [];
-
-        //     const noteMap = {};
-        //     let instCounter = 0;
-        //     for (const key in noteWeights) {
-        //         noteMap[key] = instCounter;
-        //         instCounter += 1;
-        //     }
-
-        //     const colorMatrix = [];
-
-        //     for (const key in noteWeights) {
-        //         const instrument = noteMap[key];
-        //         const durationValuesArray = noteWeights[key];
-        //         let barlineCounter = 0;
-        //         if (durationValuesArray[0] === "|") {
-        //             barlineCounter = -1;
-        //         }
-        //         const instrumentColors = [];
-        //         let beatPositionCounter = 0;
-
-        //         for (let beatDurationIndex = 0; beatDurationIndex < durationValuesArray.length; beatDurationIndex++) {
-        //             if (durationValuesArray[beatDurationIndex] === "|") {
-        //                 barlineCounter += 1;
-        //                 continue;
-        //             }
-
-        //             const beatDuration = durationValuesArray[beatDurationIndex];
-        //             const beatDurationView = beatDuration * extraBeats;
-
-        //             if (beatDurationView == 0) {
-        //                 let whiteSpaces = noteWeightsMax[beatDurationIndex] * extraBeats;
-
-        //                 for (let beatCount = 0; beatCount < whiteSpaces; beatCount++) {
-        //                     instrumentColors.push("rgb(255, 255, 255)");
-        //                     let box = document.getElementById(`box${instrument}-${barlineCounter}-${beatCount}-${beatDurationIndex}`);
-        //                     box.setAttribute("data-beat-position", `box${instrument}-${beatPositionCounter}`);
-        //                     beatPositionCounter += 1;
-        //                 }
-        //             }
-
-        //             for (let beatCount = 0; beatCount < beatDurationView; beatCount++) {
-        //                 const color = getColor(beatCount, beatDurationView);
-        //                 instrumentColors.push(color);
-        //                 let box = document.getElementById(`box${instrument}-${barlineCounter}-${beatCount}-${beatDurationIndex}`);
-        //                 box.setAttribute("data-beat-position", `box${instrument}-${beatPositionCounter}`);
-        //                 beatPositionCounter += 1;
-
-        //             }
-        //         }
-        //         colorMatrix.push(instrumentColors);
-
-        //     }
-
-        //     return colorMatrix;
-        // };
-
-
-
-
-
-
-
-
-
-        // async function applyColorMatrixWithWindow(sharedVars, colorMatrix, windowSize) {
-        //     const updateColors = (windowPosNow) => {
-        //         for (let instrument = 0; instrument < colorMatrix.length; instrument++) {
-        //             const instrumentColors = colorMatrix[instrument];
-        //             const windowStart = Math.max(windowPosNow, 0);
-        //             const windowEnd = Math.min(windowPosNow + windowSize, instrumentColors.length);
-
-        //             for (let beatPosition = 0; beatPosition < instrumentColors.length; beatPosition++) {
-        //                 let beatsToColorElement = document.querySelector(`[data-beat-position="box${instrument}-${beatPosition}"]`);
-
-        //                 if (beatPosition + windowStart < windowEnd) {
-        //                     const color = instrumentColors[beatPosition + windowStart];
-        //                     beatsToColorElement.style.backgroundColor = color;
-        //                 } else {
-        //                     beatsToColorElement.style.backgroundColor = "rgb(255,255,255)";
-        //                 }
-        //             }
-        //         }
-        //     };
-
-        //     for (let windowPosNow = 0; windowPosNow < colorMatrix[0].length; windowPosNow++) {
-        //         let testTimer = performance.now();
-        //         let startTime = performance.now();
-
-        //         await new Promise((resolve) => {
-        //             requestAnimationFrame(() => {
-        //                 updateColors(windowPosNow);
-        //                 resolve();
-        //             });
-        //         });
-
-        //         let endTime = performance.now();
-        //         let elapsedTime = endTime - startTime;
-        //         let delayTime = sharedVars.secondToMove * 1000 - elapsedTime - 10;
-        //         await delay(delayTime);
-        //         let endTest = performance.now();
-        //         console.log(endTest - testTimer, sharedVars.secondToMove * 1000);
-        //     }
-        // }
 
 
         function getColor(index, total) {
@@ -354,257 +245,11 @@
             return durationGuide
         }
 
-        function removeAndAttach(barline, barlineToShow, beatCount, noteNumber, numInstrument, barCount, secondToMove, callback) {
-
-            // console.log("barCount: ", barCount);
-            // Get the box to be removed and the box to be added
-            const movingBox = document.getElementById('moving_box');
-            // const boxWidth = 100 / (barlineToShow * numBeats);
-            for (let instrument = 0; instrument < numInstrument; instrument++) {
-                let movingBeat = document.getElementById('box' + instrument.toString() + "-" + barCount.toString() + "-" + beatCount.toString() + "-" + noteNumber.toString());
-                // console.log('box' + instrument.toString() + "-" + barCount.toString() + "-" + beatCount.toString() + "-" + noteNumber.toString());
-                const rowDiv = document.getElementById('row' + instrument.toString());
-                const extraRowDiv = document.getElementById('extraRow' + instrument.toString());
-
-                movingBeat.style.transition = `transform ${secondToMove * 1000}ms`;
-                movingBeat.style.transform = `translateX(-100%)`;
-
-                // console.log(movingBeat);
-                let extraDivsToRotate = (barline - barlineToShow) <= 0 ? false : true;
-                // console.log(extraDivsToRotate)
-                // Remove movingBeat element after transition is complete
-                // setTimeout(() => {
-                movingBeat.style.opacity = '0';
-
-                // take from first of show queue and append to end of reserve queue
-                rowDiv.removeChild(movingBeat);
-
-                if (extraDivsToRotate) {
-                    extraRowDiv.appendChild(movingBeat);
-                    movingBeat = extraRowDiv.children[0];
-                    extraRowDiv.removeChild(movingBeat);
-                }
-                rowDiv.append(movingBeat);
-                movingBeat.style.opacity = '1';
-                movingBeat.style.transform = 'translateX(0)';
-            }
-            // console.log(timeOutId);
-        };
-        // function delay(time) {
-        //     return new Promise((resolve) => setTimeout(resolve, time));
-        // }
-
-        async function Repeat(sharedVars, noteNumber, beatCount, barCount, noteWeightsMax, extraBeats, numInstrument, barline, barlineToShow, callback) {
-            let counter = 0;
-            let extraCounter = 0;
-
-            while (counter < sharedVars.stopInterval) {
-                let startTime2 = performance.now();
-
-                while (sharedVars.isRunning && noteNumber < noteWeightsMax.length) {
-                    if (noteWeightsMax[noteNumber] == "|") {
-                        barCount += 1;
-                        noteNumber++;
-                        continue;
-                    }
-                    beatDurationMax = noteWeightsMax[noteNumber] * extraBeats;
-
-                    for (beatCount; beatCount < beatDurationMax; beatCount++) {
-                        extraCounter += 1;
-                        let startTime = performance.now();
-
-                        if (!sharedVars.isRunning) {
-                            break;
-                        }
-
-                        removeAndAttach(barline, barlineToShow, beatCount, noteNumber, numInstrument, barCount, sharedVars.secondToMove);
-
-                        if (callback) {
-                            callback(noteNumber, beatCount, barCount);
-                        };
-
-                        let endTime = performance.now();
-                        let elapsedTime = endTime - startTime;
-                        let delayTime = sharedVars.secondToMove * 1000 - elapsedTime;
-                        if (delayTime < 0) delayTime = 0; // Ensure non-negative delay
-
-                        await delay(delayTime);
-
-                        // Print the duration of the iteration
-                        let iterationEndTime = performance.now();
-                        console.log(`Iteration time: ${iterationEndTime - startTime} milliseconds`);
-                    };
-                    beatCount = 0;
-                    noteNumber++;
-                }
-
-                let endTime2 = performance.now();
-                let elapsedTime2 = endTime2 - startTime2;
-                console.log(`Elapsed2 time: ${elapsedTime2} milliseconds`);
-                counter += 1;
-            }
-            sharedVars.stopInterval = 0;
-        }
-
-        // async function Repeat(sharedVars, noteNumber, beatCount, barCount, noteWeightsMax, extraBeats, numInstrument, barline, barlineToShow, callback) {
-        //     let counter = 0;
-        //     let extraCounter = 0;
-
-        //     while (counter < sharedVars.stopInterval) {
-        //         let startTime2 = performance.now();
-
-        //         while (sharedVars.isRunning && noteNumber < noteWeightsMax.length) {
-        //             if (noteWeightsMax[noteNumber] == "|") {
-        //                 barCount += 1;
-        //                 noteNumber++;
-        //                 continue;
-        //             }
-        //             beatDurationMax = noteWeightsMax[noteNumber] * extraBeats;
-
-        //             for (beatCount; beatCount < beatDurationMax; beatCount++) {
-        //                 extraCounter += 1;
-        //                 let startTime = performance.now();
-
-        //                 if (!sharedVars.isRunning) {
-        //                     break;
-        //                 }
-
-        //                 removeAndAttach(barline, barlineToShow, beatCount, noteNumber, numInstrument, barCount, sharedVars.secondToMove);
-
-        //                 if (callback) {
-        //                     callback(noteNumber, beatCount, barCount);
-        //                 };
-
-        //                 let endTime = performance.now();
-        //                 let elapsedTime = endTime - startTime;
-        //                 let delayTime = sharedVars.secondToMove * 1000 - elapsedTime;
-        //                 if (delayTime < 0) delayTime = 0; // Ensure non-negative delay
-
-        //                 await delay(delayTime);
-
-        //                 // Print the duration of the iteration
-        //                 let iterationEndTime = performance.now();
-        //                 console.log(`Iteration time: ${iterationEndTime - startTime} milliseconds`);
-        //             };
-        //             beatCount = 0;
-        //             noteNumber++;
-        //         }
-
-        //         let endTime2 = performance.now();
-        //         let elapsedTime2 = endTime2 - startTime2;
-        //         console.log(`Elapsed2 time: ${elapsedTime2} milliseconds`);
-        //         counter += 1;
-        //     }
-        //     sharedVars.stopInterval = 0;
-        // }
-        // // Repeating key will use this function
-        // async function Repeat(sharedVars, noteNumber, beatCount, barCount, noteWeightsMax, extraBeats, numInstrument, barline, barlineToShow, callback) {
-        //     // let isRunning = true;
-
-        //     // let stopInterval = sharedVars.stopInterval
-        //     //stopInterval -1 for infinity
-        //     let counter = 0;
-
-        //     counter = 0;
-        //     let extraCounter = 0;
-        //     while (counter < sharedVars.stopInterval) {
-        //         let startTime2 = performance.now();
-        //         while (sharedVars.isRunning && noteNumber < noteWeightsMax.length) {
-        //             // console.log("wtf", sharedVars.isRunning);
-        //             if (noteWeightsMax[noteNumber] == "|") {
-        //                 barCount += 1;
-        //                 noteNumber++;
-        //                 continue;
-        //             }
-        //             beatDurationMax = noteWeightsMax[noteNumber] * extraBeats;
-        //             // console.log("noteNumber is: ", noteNumber, beatDurationMax);
-        //             // let currentBarCount = barCount;
-        //             let timeList = [];
-        //             let goalAvgDelay = 0;
-        //             let currentAvg = 0;
-        //             for (beatCount; beatCount < beatDurationMax; beatCount++) {
-        //                 extraCounter += 1;
-        //                 if (goalAvgDelay == 0) {
-        //                     goalAvgDelay = sharedVars.secondToMove * 1000;
-        //                 }
-        //                 let startTime = performance.now();
-        //                 console.log("wtf", sharedVars.isRunning);
-        //                 if (!sharedVars.isRunning) {
-        //                     break;
-        //                 }
-        //                 removeAndAttach(barline, barlineToShow, beatCount, noteNumber, numInstrument, barCount, sharedVars.secondToMove, () => {
-        //                     // console.log("Repeat function complete");
-        //                 });
-        //                 if (callback) {
-        //                     callback(noteNumber, beatCount, barCount);
-        //                     // console.log("a " + intervalId, beatCount, barCount);
-        //                 };
-        //                 if (currentAvg == 0)
-        //                     await delay(sharedVars.secondToMove);
-        //                 else
-        //                     await delay(sharedVars.secondToMove - (currentAvg / 1000 - sharedVars.secondToMove));
-        //                 let endTime = performance.now();
-        //                 let elapsedTime = endTime - startTime;
-        //                 timeList.push(elapsedTime);
-        //                 currentAvg = timeList.reduce((sum, value) => sum + value, 0) / timeList.length;
-        //                 // goalAvgDelay = goalAvgDelay - (currentAvg - goalAvgDelay);
-        //                 console.log(`Elapsed time: ${currentAvg} milliseconds`, sharedVars.secondToMove - (currentAvg / 1000 - sharedVars.secondToMove));
-
-        //             };
-        //             beatCount = 0;
-        //             noteNumber++;
-
-        //         }
-        //         let endTime2 = performance.now();
-        //         let elapsedTime2 = endTime2 - startTime2;
-        //         console.log(`Elapsed2 time: ${elapsedTime2} milliseconds`);
-        //         counter += 1
-        //         break;
-        //     }
-        //     sharedVars.stopInterval = 0
-
-        // }
-
-        // if (beatCount == numBeats) {
-        //     beatCount = 0;
-        //     barCount += 1;
-        // }
-        // if (barCount == barline)
-        //     barCount = 0;
-        // counter += 1;
-        // removeAndAttach(barline, barlineToShow, beatCount, numBeats, numInstrument, barCount, secondToMove, () => {
-        //     // console.log("Repeat function complete");
-        // });
-        // beatCount += 1;
-
-
-
-        // for (let beatDurationIndex = 0; beatDurationIndex < durationValuesArray.length; beatDurationIndex++) {
-        //     if (durationValuesArray[beatDurationIndex] === "|") {
-        //         barlineCounter += 1;
-        //         elem += 1;
-        //         continue;
-        //     }
-        //     beatDuration = durationValuesArray[beatDurationIndex];
-        //     beatDurationView = beatDuration * extraBeats;
-        //     console.log(beatDurationView);
-
-        //     for (let beatCount = 0; beatCount < beatDurationView; beatCount++) {
-        //         // currentBeatCounter = beatDurationView + beatCount
-        //         console.log(beatCount, beatDurationView);
-        //         // console.log("id: ", "box" + instrument.toString() + "-" + barlineCounter.toString() + "-" + beatCount.toString() + "-" + elem.toString())
-        //         let beatsToColorElement = document.getElementById("box" + instrument.toString() + "-" + barlineCounter.toString() + "-" + beatCount.toString() + "-" + beatDurationIndex.toString())
-        //         const color = getColor(beatCount, beatDurationView);
-        //         beatsToColorElement.style.backgroundColor = color;
-        //     }
-
-        // }
-
     </script>
 
 
     <script>
-        function tempoSlider(sharedVars, extraBeats, noteWeightsMax, instrumentCounts, barCounter, barlinesMaxView) {
+        function tempoSlider(sharedVars, colorCalculationWorker, delayWorker, extraBeats, noteWeightsMax, instrumentCounts, barCounter, barlinesMaxView) {
 
             const slider = document.getElementById("slider");
             const sliderValue = document.getElementById('slider-value');
@@ -639,6 +284,9 @@
                 // sharedVars.isRunning = false;
                 sharedVars.secondToMove = updateBeatBarPerSecond;
                 sharedVars.isRunning = true;
+                let update = true;
+                // let updateSharedVars = sharedVars;
+                delayWorker.postMessage({ sharedVars, update });
 
                 // if (sharedVars.stopInterval == 0) {
                 //     sharedVars.stopInterval += 1;

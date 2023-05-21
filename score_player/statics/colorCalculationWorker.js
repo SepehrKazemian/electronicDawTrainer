@@ -1,28 +1,73 @@
-self.onmessage = async (event) => {
-    const { sharedVars, colorMatrix, windowSize, start, end, maxBeatPositionCounter, repeat } = event.data;
-    console.log("6666666", event.data);
-    const results = [];
+let canProceed = false;
 
+self.onmessage = async (event) => {
+    if (event.data.signal) {
+        canProceed = true;
+        return;
+    }
+
+    let { sharedVars, colorMatrix, windowSize, start, end, maxBeatPositionCounter, repeat } = event.data;
+
+
+    let results = [];
+    let counter = 0;
     if (repeat) {
         for (let windowPosNow = start; windowPosNow < 2 * end; windowPosNow++) {
+            console.log("6666666", event.data);
+            counter++;
             // console.log(sharedVars.secondToMove);
             const updatedColors = calculateUpdatedColors(colorMatrix, windowPosNow, windowSize, maxBeatPositionCounter, repeat);
+            [canProceed, results, counter] = send_data_partitions(updatedColors, results, counter);
+            console.log(counter, results.length, canProceed);
+            // results.push(updatedColors);
+            // // self.postMessage(updatedColors);
+            // if (counter == 5) {
+            //     self.postMessage(results);
+            //     results = [];
+            //     counter = 0;
+            // }
+
             // console.log("xxxx", updatedColors[0][2]);
-            // self.postMessage(updatedColors);
-            results.push(updatedColors);
         }
     }
     else {
         for (let windowPosNow = start; windowPosNow < end; windowPosNow++) {
+            counter++;
+            // console.log(sharedVars.secondToMove);
             const updatedColors = calculateUpdatedColors(colorMatrix, windowPosNow, windowSize, maxBeatPositionCounter, repeat);
-            // self.postMessage({ updatedColors });
-            results.push(updatedColors);
+            [results, counter] = send_data_partitions(updatedColors, results, counter);
         }
     }
 
     // console.log(sharedVars, colorMatrix, windowSize, results);
     self.postMessage(results);
+
+    function send_data_partitions(updatedColors, results, counter) {
+        results.push(updatedColors);
+        // self.postMessage(updatedColors);
+        if (counter == 5) {
+            if (!canProceed) {
+                new Promise(resolve => {
+                    const interval = setInterval(() => {
+                        if (canProceed) {
+                            clearInterval(interval);
+                            resolve();
+                            self.postMessage(results);
+                            results = [];
+                            counter = 0;
+                            console.log("sent");
+                            canProceed = false;  // After posting data, wait for signal to proceed
+                        }
+                    }, 100);  // Check every 100 ms
+                });
+            }
+        }
+
+        return [canProceed, results, counter]
+
+    }
 };
+
 
 function calculateUpdatedColors(colorMatrix, windowPosNow, windowSize, maxBeatPositionCounter, repeat) {
     const updatedColors = [];

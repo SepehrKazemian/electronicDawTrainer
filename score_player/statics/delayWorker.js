@@ -1,8 +1,16 @@
+let sharedVars, colorMatrix, windowSize, updatedColorsList;
+let savedInd = 0;
 self.onmessage = async (event) => {
-    const { sharedVars, colorMatrix, windowSize, updatedColorsList } = event.data;
 
-    for (const updatedColors of updatedColorsList) {
-        console.log("hereeeeeee11111");
+    if (event.data.updatedColorsList)
+        ({ sharedVars, colorMatrix, windowSize, updatedColorsList } = event.data);
+    else if (event.data.sharedVars && event.data.update) {
+        sharedVars = event.data.sharedVars;
+        console.log("xxxx", sharedVars);
+    }
+    for (let i = savedInd; i < updatedColorsList.length; i++) {
+        const updatedColors = updatedColorsList[i];
+        console.log("hereeeeeee11111", sharedVars.secondToMove, i);
         let startTime = performance.now();
         let testTime = performance.now();
 
@@ -14,8 +22,10 @@ self.onmessage = async (event) => {
         await preciseDelay(delayTime);
         // console.log("sharsedVars ", delayTime + elapsedTime, performance.now() - testTime)
         let endTest = performance.now();
+        savedInd = i;
 
     }
+    savedInd = 0;
 };
 
 
