@@ -8,45 +8,10 @@
 //     // Rest of the code that uses the worker scripts
 // }
 
-export function movingColors(colorCalculationWorker, delayWorker, sharedVars, colorMatrix, windowSize, maxBeatPositionCounter) {
+export function movingColors(colorCalculationWorker, delayWorker, sharedVars, soundMatrix, colorMatrix, windowSize, maxBeatPositionCounter) {
     // const colorCalculationWorker = new Worker(colorCalculationWorkerPath);
     // const delayWorker = new Worker(delayWorkerPath);
-    applyColorMatrixWithWindow(sharedVars, colorMatrix, windowSize, maxBeatPositionCounter, true);
-
-    // colorCalculationWorker.onmessage = (event) => {
-    //     console.log("hereee??????222");
-    //     const { sharedVars, colorMatrix, windowSize, results } = event.data;
-    //     // Send precalculated colors to the delayWorker
-    //     delayWorker.postMessage({ sharedVars, colorMatrix, windowSize, updatedColorsList: results });
-    //     console.log("after??????222");
-    // };
-
-    // let lastUpdateTime = null;
-    // delayWorker.onmessage = (event) => {
-    //     console.log("hereee??????333");
-    //     const currentTime = performance.now();
-    //     if (lastUpdateTime !== null) {
-    //         const timeBetweenUpdates = currentTime - lastUpdateTime;
-    //         console.log("Time interval between updates: ", timeBetweenUpdates);
-    //     }
-    //     lastUpdateTime = currentTime;
-
-    //     const { updatedColors } = event.data;
-    //     updateColors(updatedColors);
-    //     console.log("hereee??????444");
-    // };
-
-    // function updateColors(updatedColors) {
-    //     for (const [instrument, beatPosition, color] of updatedColors) {
-    //         let beatsToColorElement = document.querySelector(
-    //             `[data-beat-position="box${instrument}-${beatPosition}"]`
-    //         );
-    //         // console.log(instrument, beatPosition);
-    //         beatsToColorElement.style.backgroundColor = color;
-    //     }
-
-
-    // }
+    applyColorMatrixWithWindow(sharedVars, soundMatrix, colorMatrix, windowSize, maxBeatPositionCounter, true);
 
     function postMessageToColorCalculationWorker(message) {
         return new Promise((resolve, reject) => {
@@ -59,31 +24,49 @@ export function movingColors(colorCalculationWorker, delayWorker, sharedVars, co
     }
     // Function to send a message to delayWorker
     // let lastUpdateTime = null;
+    let taskQueue = [];
+
     function postMessageToDelayWorker(message) {
         console.log("yellow", message);
-        return new Promise((resolve, reject) => {
-            delayWorker.onmessage = (event) => {
-                // const currentTime = performance.now();
+
+        let task = new Promise((resolve, reject) => {
+            let handler = (event) => {
                 // console.log("yellowxxxx", message);
-                const updatedColors = event.data;
-                updateColors(updatedColors);
-                colorCalculationWorker.postMessage({ signal: true });
-                // const timeBetweenUpdates = currentTime - lastUpdateTime;
-                // console.log("Time interval between updates: ", timeBetweenUpdates);
-                // lastUpdateTime = currentTime;
-                resolve(); // Resolve the promise with the event data
+                if (event.data.done) { // check if worker has finished its task
+                    resolve(); // if yes, resolve promise and remove handler
+                    delayWorker.removeEventListener('message', handler);
+                }
+                else {
+                    const [updatedSounds, updatedColors] = event.data;
+                    updateColors(updatedColors);
+                    updateSounds(updatedSounds)
+                    // console.log("done!");
+                }
             };
+
+            delayWorker.addEventListener('message', handler);
             delayWorker.onerror = reject;
             delayWorker.postMessage(message);
+            console.log("aaaa", reject, message);
         });
+
+        taskQueue.push(task);
+        return task;
+    }
+
+    async function executeTasks() {
+        for (let task of taskQueue) {
+            await task;
+        }
     }
 
     // Main function to apply color matrix with window and update colors
-    async function applyColorMatrixWithWindow(sharedVars, colorMatrix, windowSize, maxBeatPositionCounter, repeat) {
+    async function applyColorMatrixWithWindow(sharedVars, soundMatrix, colorMatrix, windowSize, maxBeatPositionCounter, repeat) {
         console.log("first ");
         const colorCalculationPromise = postMessageToColorCalculationWorker({
             sharedVars,
             colorMatrix,
+            soundMatrix,
             windowSize,
             start: 0,
             end: colorMatrix[0].length,
@@ -107,17 +90,23 @@ export function movingColors(colorCalculationWorker, delayWorker, sharedVars, co
 
         // console.log("third calling all");
         console.log("second");
-        const delayWorkerPromise = colorCalculationPromise.then((colorCalculationResult) => {
+        const delayWorkerPromise = colorCalculationPromise.then(async (colorCalculationResult) => {
             console.log("third calling all");
-            const updatedColorsList = colorCalculationResult.data;
-            console.log("after??????222", updatedColorsList);
-
-            return postMessageToDelayWorker({
-                sharedVars,
-                colorMatrix,
-                windowSize,
-                updatedColorsList,
-            });
+            const [updatedSoundList, updatedColorsList] = colorCalculationResult.data;
+            console.log("after??????222", updatedColorsList, updatedSoundList);
+            if (repeat) {
+                for (let counter = 0; counter < 2; counter++) {
+                    console.log("counter", counter);
+                    await postMessageToDelayWorker({
+                        sharedVars,
+                        colorMatrix,
+                        windowSize,
+                        updatedSoundList,
+                        updatedColorsList,
+                    });
+                }
+            }
+            await executeTasks();
         });
         // console.log("forth all called");
         // const delayWorkerResult = await delayWorkerPromise;
@@ -140,18 +129,18 @@ export function movingColors(colorCalculationWorker, delayWorker, sharedVars, co
 
     // Handle message from delayWorker
     // let lastUpdateTime = null;
-    delayWorker.onmessage = (event) => {
-        console.log("here111");
-        const currentTime = performance.now();
-        if (lastUpdateTime !== null) {
-            const timeBetweenUpdates = currentTime - lastUpdateTime;
-            console.log("Time interval between updates: ", timeBetweenUpdates);
-        }
-        lastUpdateTime = currentTime;
+    // delayWorker.onmessage = (event) => {
+    //     console.log("here111");
+    //     const currentTime = performance.now();
+    //     if (lastUpdateTime !== null) {
+    //         const timeBetweenUpdates = currentTime - lastUpdateTime;
+    //         console.log("Time interval between updates: ", timeBetweenUpdates);
+    //     }
+    //     lastUpdateTime = currentTime;
 
-        const { updatedColors } = event.data;
-        updateColors(updatedColors);
-    };
+    //     const { updatedColors } = event.data;
+    //     updateColors(updatedColors);
+    // };
 
     // Function to update colors on the UI
     function updateColors(updatedColors) {
@@ -162,6 +151,55 @@ export function movingColors(colorCalculationWorker, delayWorker, sharedVars, co
             );
             // console.log(instrument, beatPosition);
             beatsToColorElement.style.backgroundColor = color;
+        }
+    }
+
+    let audioBufferCache = {};
+
+    async function decodeAudioData(audioContext, audioUrl) {
+        const response = await fetch(audioUrl);
+        const audioData = await response.arrayBuffer();
+        const audioBuffer = await audioContext.decodeAudioData(audioData);
+        return audioBuffer;
+    }
+
+    async function preloadAudioFiles(audioContext) {
+        const audioFiles = [
+            { key: "D3", inst: "percussion" },
+            // Add more audio files to preload if needed
+        ];
+
+        const decodePromises = audioFiles.map(async (audioFile) => {
+            if (!audioBufferCache[audioFile.key]) {
+                const audioUrl = "/sample_url/" + audioFile.inst + "/" + audioFile.key + ".wav";
+                const audioBuffer = await decodeAudioData(audioContext, audioUrl);
+                audioBufferCache[audioFile.key] = audioBuffer;
+            }
+        });
+
+        await Promise.all(decodePromises);
+    }
+
+    // Call the preload function at the start of your application or when the page loads
+    // window.addEventListener("load", async () => {
+    //     const audioContext = new AudioContext();
+    //     await preloadAudioFiles(audioContext);
+    // });
+    const audioContext = new AudioContext();
+    preloadAudioFiles(audioContext);
+    function updateSounds(updatedSounds) {
+        // console.log(updatedSounds);
+        for (const [instrument, beatPosition, sound] of updatedSounds) {
+            // console.log(sound);
+            if ((sound > 0) && (beatPosition == 0)) {
+                const selectedSf = "D3";
+                if (audioBufferCache[selectedSf]) {
+                    const audioSource = audioContext.createBufferSource();
+                    audioSource.buffer = audioBufferCache[selectedSf];
+                    audioSource.connect(audioContext.destination);
+                    audioSource.start();
+                }
+            }
         }
     }
 }

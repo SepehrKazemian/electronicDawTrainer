@@ -1,34 +1,59 @@
-let sharedVars, colorMatrix, windowSize, updatedColorsList;
+let sharedVars, colorMatrix, windowSize, updatedColorsList = [];
 let savedInd = 0;
+let isUpdatingSharedVars = false;
+let tempo = 120;
+
 self.onmessage = async (event) => {
 
-    if (event.data.updatedColorsList)
-        ({ sharedVars, colorMatrix, windowSize, updatedColorsList } = event.data);
-    else if (event.data.sharedVars && event.data.update) {
+    if (event.data.updatedColorsList) {
+        ({ sharedVars, colorMatrix, windowSize, updatedSoundList, updatedColorsList } = event.data);
+        processColors(savedInd);
+
+    } else if (event.data.sharedVars && event.data.update) {
         sharedVars = event.data.sharedVars;
         console.log("xxxx", sharedVars);
+        isUpdatingSharedVars = true;
+        processColors(savedInd);
     }
-    for (let i = savedInd; i < updatedColorsList.length; i++) {
-        const updatedColors = updatedColorsList[i];
-        console.log("hereeeeeee11111", sharedVars.secondToMove, i);
-        let startTime = performance.now();
-        let testTime = performance.now();
 
-        self.postMessage(updatedColors);
-        let endTime = performance.now();
-        let elapsedTime = endTime - startTime;
-        let delayTime = sharedVars.secondToMove * 1000 - elapsedTime;
+    async function processColors(i) {
+        if (i < updatedColorsList.length && !isUpdatingSharedVars) {
+            const updatedColors = updatedColorsList[i];
+            const updatedSounds = updatedSoundList[i];
+            let startTime = performance.now();
+            let testTime = performance.now();
+            function waitUntilRunning() {
+                return new Promise((resolve) => {
+                    if (sharedVars.isRunning)
+                        resolve();
+                    else
+                        setTimeout(() => resolve(waitUntilRunning()), 100);
+                })
+            }
 
-        await preciseDelay(delayTime);
-        // console.log("sharsedVars ", delayTime + elapsedTime, performance.now() - testTime)
-        let endTest = performance.now();
-        savedInd = i;
+            await waitUntilRunning();
 
+            self.postMessage([updatedSounds, updatedColors]);
+            let endTime = performance.now();
+            let elapsedTime = endTime - startTime;
+            let delayTime = sharedVars.secondToMove * 1000 - elapsedTime;
+
+            await preciseDelay(delayTime);
+            let endTest = performance.now();
+            savedInd = i;
+
+            processColors(i + 1);
+        }
+        if (isUpdatingSharedVars) {
+            isUpdatingSharedVars = false;
+        }
+        if (i == updatedColorsList.length) {
+            savedInd = 0;
+            console.log(savedInd);
+            self.postMessage({ done: true });
+        }
     }
-    savedInd = 0;
-};
-
-
+}
 
 function preciseDelay(ms) {
     const start = performance.now();

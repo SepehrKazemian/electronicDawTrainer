@@ -42,6 +42,11 @@ urlpatterns = [
         name="serve_mp3",
     ),
     path(
+        "index2/sample_url/<str:instrument>/<str:note_name>/",
+        views.serve_mp3,
+        name="serve_mp3_1",
+    ),
+    path(
         "sf_player/<str:instrument>/<str:sf_filename>/",
         views.sf_player,
         name="serve_mp3",
